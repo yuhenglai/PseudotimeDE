@@ -10,6 +10,7 @@ runTauStarDE(
   mat,
   assay.use = "counts",
   seurat.assay = "RNA",
+  mode = "auto",
   mc.cores = 2,
   mc.preschedule = TRUE,
   SIMPLIFY = TRUE
@@ -29,6 +30,8 @@ Its row names should be genes and col names should be cells.}
 \item{assay.use}{The \code{assay} used in SingleCellExperiment or \code{slot} used in Seurat. Default is \code{counts}.}
 
 \item{seurat.assay}{The \code{assay} used in Seurat. Default is \code{'RNA'}.}
+
+\item{mode}{hypothesis testing method used, could be the asymptotic distribution or permutation test.}
 
 \item{mc.cores}{Number of cores for computing.}
 

@@ -4,7 +4,7 @@
 \alias{pMixHoeffInd}
 \title{Null asymptotic distribution of t* in the mixed case}
 \usage{
-pMixHoeffInd(x, probs, lower.tail = T, error = 0.01)
+pMixHoeffInd(x, probs, lower.tail = T, error = 0.001)
 }
 \arguments{
 \item{x}{the value (or vector of values) at which to evaluate the function.}
@@ -22,9 +22,8 @@ then the ith entry of probs should be the probability of seeing
 guide rather than an exact upper bound to the amount of error.}
 }
 \value{
-dMixHoeffInd gives the density, pMixHoeffInd gives the distribution
-        function, qMixHoeffInd gives the quantile function, and
-        rMixHoeffInd generates random samples.
+pMixHoeffInd gives the distribution
+        function.
 }
 \description{
 Density, distribution function, quantile function and random generation for

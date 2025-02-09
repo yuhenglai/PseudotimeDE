@@ -4,13 +4,17 @@
 \alias{tauStarTest}
 \title{Test of Independence Using the Tau* Measure}
 \usage{
-tauStarTest(x, y, error = 0.01)
+tauStarTest(x, y, error = 0.001, mode = "auto")
 }
 \arguments{
 \item{x}{a vector of sampled values.}
 
 \item{y}{a vector of sampled values corresponding to x, y must be the same
 length as x.}
+
+\item{error}{integration error for computing the asymptotic distribution.}
+
+\item{mode}{hypothesis testing method used, could be the asymptotic distribution or permutation test.}
 }
 \value{
 a list with class "tstest" recording the outcome of the test.
@@ -27,7 +31,7 @@ distributions were computed in Nandy, Weihs, and Drton (2016)
 \examples{
 set.seed(123)
 x = rnorm(100)
-y = rnorm(100)
+y = rbinom(100, 1, 0.5)
 testResults = tauStarTest(x,y)
 print(testResults$pVal) # big p-value
 

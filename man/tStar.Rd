@@ -17,7 +17,7 @@ The numeric value of the t* statistic.
 \description{
 Computes the t* U-statistic for input data pairs
 (x_1,y_1), (x_2,y_2), ..., (x_n,y_n)
-using the algorithm developed by Heller and Heller (2016) <arXiv:1605.08732>
+using the improved algorithm based on Heller and Heller (2016) <arXiv:1605.08732>
 building off of the work of Weihs, Drton, and Leung (2015)
 <DOI:10.1007/s00180-015-0639-x>.
 }

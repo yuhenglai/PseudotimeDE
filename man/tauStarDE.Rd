@@ -4,10 +4,12 @@
 \alias{tauStarDE}
 \title{Perform Differential Expression Test by tauStar on One Gene}
 \usage{
-tauStarDE(pseudotime, count.v)
+tauStarDE(pseudotime, count.v, mode = "auto")
 }
 \arguments{
 \item{count.v}{Rhe expression data.}
+
+\item{mode}{hypothesis testing method used, could be the asymptotic distribution or permutation test.}
 
 \item{gene}{A vector of pseudotime.}
 }

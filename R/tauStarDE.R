@@ -94,7 +94,7 @@ isProbVector <- function(probs) {
 #'
 #' @return pMixHoeffInd gives the distribution
 #'         function.
-pMixHoeffInd <- function(x, probs, lower.tail = T, error = 0.01) { # 10^-6
+pMixHoeffInd <- function(x, probs, lower.tail = T, error = 0.001) {
   if (!isProbVector(probs)) {
     stop("probs in pMixHoeffInd is not a probability vector.")
   }
@@ -152,6 +152,8 @@ isValidDataVector <- function(x) {
 #' @param x a vector of sampled values.
 #' @param y a vector of sampled values corresponding to x, y must be the same
 #'        length as x.
+#' @param mode hypothesis testing method used, could be the asymptotic distribution or permutation test.
+#' @param error integration error for computing the asymptotic distribution.
 #'
 #' @return a list with class "tstest" recording the outcome of the test.
 #'
@@ -169,7 +171,7 @@ isValidDataVector <- function(x) {
 #' y = y + x # make x and y correlated
 #' testResults = tauStarTest(x,y)
 #' print(testResults$pVal) # small p-value
-tauStarTest <- function(x, y, error = 0.01, mode = "auto") {
+tauStarTest <- function(x, y, error = 0.001, mode = "auto") {
   if (!isValidDataVector(x) || !isValidDataVector(y) ||
       length(x) != length(y)) {
     stop(paste("vectors inputted to tauStarTest must be of type numeric or",
@@ -178,7 +180,7 @@ tauStarTest <- function(x, y, error = 0.01, mode = "auto") {
   if (mode != "auto" && mode != "permute" && mode != "asymptotic"){
     stop("Mode must be auto, permute or asymptotic")
   }  
-
+  
   xIsDis = isDiscrete(x)
   yIsDis = isDiscrete(y)
   if (xIsDis && !yIsDis) {
@@ -195,35 +197,37 @@ tauStarTest <- function(x, y, error = 0.01, mode = "auto") {
   toReturn$x = x
   toReturn$y = y
   toReturn$tStar = tStar(x, y)
+  toReturn$mode = "mixed"
   
   if (yIsDis){
     if (length(unique(y)) == 1){
       toReturn$pVal = 1
       return(toReturn)
     }  
-    if (length(unique(y)) <= 50) 
-      p = as.numeric(table(y))/n
-    else {
-      lbr = quantile(y, 0:50/50)
-      p = hist(y, breaks = unique(lbr), plot = F)$counts/n
-    }
-
+    # if (length(unique(y)) <= 50) 
+    p = as.numeric(table(y))/n
+    # else {
+    #   lbr = quantile(y, 0:50/50)
+    #   p = hist(y, breaks = unique(lbr), plot = F)$counts/n
+    # }
+    
     if (mode == "permute" || (mode == "auto" && any(p > 0.99))){
       taustar_p = NULL
-      for(i in c(1:100)){
+      nsample = 1000
+      for(i in c(1:nsample)){
         temp = tStar(sample(x), y)
         taustar_p = c(taustar_p, temp)
       }
-      toReturn$pVal = 1 - sum(toReturn$tStar >= taustar_p) / 100
+      toReturn$pVal = 1 - sum(toReturn$tStar >= taustar_p) / nsample
     }
     else{
       toReturn$pVal = 1 - pMixHoeffInd(n * toReturn$tStar, probs = p, error = error)
     }  
-      
+    
   } else {
     toReturn$pVal = NA
   }
- 
+  
   return(toReturn)
 }
 
@@ -233,6 +237,7 @@ tauStarTest <- function(x, y, error = 0.01, mode = "auto") {
 #' Test if one gene is differentially expressed along pseudotime.
 #' @param gene A vector of pseudotime.
 #' @param count.v Rhe expression data.
+#' @param mode hypothesis testing method used, could be the asymptotic distribution or permutation test.
 #'
 #' @return A list with the components:
 #' \describe{
@@ -251,7 +256,7 @@ tauStarDE <- function(pseudotime,
   res = tauStarTest(pseudotime, count.v, mode = mode)
   tau = res$tStar
   tau_pv = res$pVal
-
+  
   return(list(taustar = tau,
               taustar.pv = tau_pv
   ))
@@ -272,6 +277,7 @@ tauStarDE <- function(pseudotime,
 #' Its row names should be genes and col names should be cells.
 #' @param assay.use The \code{assay} used in SingleCellExperiment or \code{slot} used in Seurat. Default is \code{counts}.
 #' @param seurat.assay The \code{assay} used in Seurat. Default is \code{'RNA'}.
+#' @param mode hypothesis testing method used, could be the asymptotic distribution or permutation test.
 #' @param mc.cores Number of cores for computing.
 #' @param mc.preschedule See \code{mclapply}. Default is TRUE.
 #' @param SIMPLIFY A logic variable whether to return a tibble (TRUE) or a list of lists (FALSE). Default is TRUE.
@@ -325,8 +331,7 @@ runTauStarDE <- function(gene.vec,
   BPPARAM$workers <- mc.cores
   
   res <- BiocParallel::bplapply(gene.vec, function(x, ...) {
-    cur_res <- tryCatch(expr = tauStarDE(pseudotime = pseudotime,
-                                         count.v = count.v[x, ], mode = mode), #input only the target gene
+    cur_res <- tryCatch(expr = tauStarDE(pseudotime = pseudotime, count.v = count.v[x, ], mode = mode), #input only the target gene
                         error = function(e) {
                           list(taustar = NA,
                                taustar.pv = NA)
