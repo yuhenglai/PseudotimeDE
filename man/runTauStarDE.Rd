@@ -11,6 +11,7 @@ runTauStarDE(
   assay.use = "counts",
   seurat.assay = "RNA",
   mode = "auto",
+  error = 0.001,
   mc.cores = 2,
   mc.preschedule = TRUE,
   SIMPLIFY = TRUE
@@ -32,6 +33,8 @@ Its row names should be genes and col names should be cells.}
 \item{seurat.assay}{The \code{assay} used in Seurat. Default is \code{'RNA'}.}
 
 \item{mode}{hypothesis testing method used, could be the asymptotic distribution or permutation test.}
+
+\item{error}{integration error for computing the asymptotic distribution.}
 
 \item{mc.cores}{Number of cores for computing.}
 

@@ -238,6 +238,7 @@ tauStarTest <- function(x, y, error = 0.001, mode = "auto") {
 #' @param gene A vector of pseudotime.
 #' @param count.v Rhe expression data.
 #' @param mode hypothesis testing method used, could be the asymptotic distribution or permutation test.
+#' @param error integration error for computing the asymptotic distribution.
 #'
 #' @return A list with the components:
 #' \describe{
@@ -252,8 +253,8 @@ tauStarTest <- function(x, y, error = 0.001, mode = "auto") {
 #'
 #' @author Yuheng Lai
 tauStarDE <- function(pseudotime,
-                      count.v, mode = "auto") {
-  res = tauStarTest(pseudotime, count.v, mode = mode)
+                      count.v, mode = "auto", error = 1e-3) {
+  res = tauStarTest(pseudotime, count.v, mode = mode, error = error)
   tau = res$tStar
   tau_pv = res$pVal
   
@@ -278,6 +279,7 @@ tauStarDE <- function(pseudotime,
 #' @param assay.use The \code{assay} used in SingleCellExperiment or \code{slot} used in Seurat. Default is \code{counts}.
 #' @param seurat.assay The \code{assay} used in Seurat. Default is \code{'RNA'}.
 #' @param mode hypothesis testing method used, could be the asymptotic distribution or permutation test.
+#' @param error integration error for computing the asymptotic distribution.
 #' @param mc.cores Number of cores for computing.
 #' @param mc.preschedule See \code{mclapply}. Default is TRUE.
 #' @param SIMPLIFY A logic variable whether to return a tibble (TRUE) or a list of lists (FALSE). Default is TRUE.
@@ -299,6 +301,7 @@ runTauStarDE <- function(gene.vec,
                          assay.use = "counts",
                          seurat.assay = 'RNA',
                          mode = 'auto',
+                         error = 1e-3,
                          mc.cores = 2,
                          mc.preschedule = TRUE,
                          SIMPLIFY = TRUE) {
@@ -331,7 +334,7 @@ runTauStarDE <- function(gene.vec,
   BPPARAM$workers <- mc.cores
   
   res <- BiocParallel::bplapply(gene.vec, function(x, ...) {
-    cur_res <- tryCatch(expr = tauStarDE(pseudotime = pseudotime, count.v = count.v[x, ], mode = mode), #input only the target gene
+    cur_res <- tryCatch(expr = tauStarDE(pseudotime = pseudotime, count.v = count.v[x, ], mode = mode, error = error), #input only the target gene
                         error = function(e) {
                           list(taustar = NA,
                                taustar.pv = NA)
